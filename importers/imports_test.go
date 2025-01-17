@@ -186,8 +186,8 @@ func TestAddTypeImports(t *testing.T) {
 			`"time"`,
 		},
 		ThirdParty: List{
-			`"github.com/volatiletech/null/v8"`,
 			`"github.com/twitter-payments/sqlboiler/v4/boil"`,
+			`"github.com/volatiletech/null/v8"`,
 		},
 	}
 
@@ -246,7 +246,7 @@ func TestMergeSet(t *testing.T) {
 	if c.Standard[0] != "fmt" && c.Standard[1] != "os" {
 		t.Errorf("Wanted: fmt, os got: %#v", c.Standard)
 	}
-	if c.ThirdParty[0] != "github.com/volatiletech/null/v8" && c.ThirdParty[1] != "github.com/twitter-payments/sqlboiler/v4" {
+	if c.ThirdParty[1] != "github.com/volatiletech/null/v8" && c.ThirdParty[0] != "github.com/twitter-payments/sqlboiler/v4" {
 		t.Errorf("Wanted: github.com/twitter-payments/sqlboiler, github.com/volatiletech/null/v8 got: %#v", c.ThirdParty)
 	}
 }
