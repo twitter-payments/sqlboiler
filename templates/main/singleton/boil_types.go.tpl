@@ -179,16 +179,16 @@ It only titlecases the EnumValue portion if it's snake-cased.
 						        return errors.New({{printf "unable to scan %s" {{enumName}}}})
 						    }
 							var err error
-						    switch v := value.(type) {
-						    case string:
-						        *m, err = Parse{{$enumName}}(v)
+							switch v := value.(type) {
+							case string:
+								*m, err = Parse{{$enumName}}(v)
 								if err != nil {
 									return err
 								}
-						    default:
-						        return fmt.Errorf("failed to scan type %v into {{$enumName}}", reflect.TypeOf(value))
-						    }
-						    return nil
+							default:
+								return fmt.Errorf("failed to scan type %v into {{$enumName}}", reflect.TypeOf(value))
+							}
+							return nil
 						}
 					{{- end -}}
 
