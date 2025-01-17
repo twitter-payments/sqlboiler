@@ -97,14 +97,14 @@ It only titlecases the EnumValue portion if it's snake-cased.
 
 					{{if $.AddEnumTypes}}
 						{{- $enumType = $enumName -}}
-						type {{$enumName}} string
+						type {{$enumName}} int32
 					{{end}}
 
 					// Enum values for {{$enumName}}
 					const (
-					{{range $val := $vals -}}
+					{{range $i, $val := $vals -}}
 						{{- $enumValue := titleCase $val -}}
-						{{$enumName}}{{$enumValue}} {{$enumType}} = {{printf "%q" $val}}
+						{{$enumName}}{{$enumValue}} {{$enumType}} = {{$i}}
 						{{$allvals = printf "%s%s%s,\n" $allvals $enumName $enumValue -}}
 					{{end -}}
 					)
@@ -140,19 +140,55 @@ It only titlecases the EnumValue portion if it's snake-cased.
 						}
 
 						func (e {{$enumName}}) String() string {
-							return string(e)
-						}
-
-						func (e {{$enumName}}) Ordinal() int {
 							switch e {
-							{{range $idx, $val := $vals -}}
-								{{- $enumValue := titleCase $val -}}
-								case {{$enumName}}{{$enumValue}}:
-									return {{$idx}}
+							{{range $val := $vals -}}
+							{{- $enumValue := titleCase $val -}}
+							case {{$enumName}}{{$enumValue}}:
+								return {{printf "%q" $val}}
 							{{end}}
 							default:
 								panic(errors.New("enum is not valid"))
 							}
+						}
+
+						func (e {{$enumName}}) Ordinal() int {
+							return int(e)
+						}
+
+						func Parse{{$enumName}}(s string) ({{$enumName}}, error) {
+    						switch s {
+    						{{range $val := $vals -}}
+							{{- $enumValue := titleCase $val -}}
+							case {{printf "%q" $val}}:
+								return {{$enumName}}{{$enumValue}}, nil
+							{{end}}
+    						default:
+    						    return {{$enumName}}(0), fmt.Errorf("unable to parse %s for %s", s, {{printf "%s", {{$enumName}}}})
+    						}
+    					}
+
+						// Value implements the driver.Valuer interface for database/sql
+						func (e {{$enumName}}) Value() (driver.Value, error) {
+						    return e.String(), nil
+						}
+
+						// Scan implements the sql.Scanner interface for database/sql
+						func (e *{{$enumName}}) Scan(value interface{}) error {
+						    if value == nil {
+						       // *e = {{$enumName}}(0) // or some default value
+						        return errors.New({{printf "unable to scan %s" {{enumName}}}})
+						    }
+							var err error
+							switch v := value.(type) {
+							case string:
+								*m, err = Parse{{$enumName}}(v)
+								if err != nil {
+									return err
+								}
+							default:
+								return fmt.Errorf("failed to scan type %v into {{$enumName}}", reflect.TypeOf(value))
+							}
+							return nil
 						}
 					{{- end -}}
 
